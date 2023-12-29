@@ -1,0 +1,32 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <select class="select2-search-query" query_function="{{ widget.attrs.query_function_name }}" style="width: 100%" name="{{ widget.name }}" id="{{ widget.id_for_label }}">
+    </select>
+
+
+<script>
+    $(document).ready(function() {
+        $('.select2-search-query').select2({
+            ajax: {
+                url: "{% url 'get_search_input_query_result' %}",
+                dataType: 'json',
+                delay: 1000,
+                data: function (params) {
+                    debugger;
+                    return {
+                        q: params.term, // search term
+                        query_name: $(this).attr('query_function')
+                    };
+                },
+                processResults: function (data, params) {
+                    return {
+                        results: data
+                    };
+                },
+                cache: true
+            },
+            minimumInputLength: 1
+        });
+    });
+</script>
