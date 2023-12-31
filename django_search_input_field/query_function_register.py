@@ -18,7 +18,7 @@ class API_REGISTER():
         assert name is not None, f"The function name cannot be None."
         
         num_params = len(inspect.signature(function).parameters)
-        assert num_params == 1, f"The function '{name}' should take only one parameter."
+        assert num_params == 2, f"The function '{name}' should take only two parameter."
         
         self.api_functions[name] = function
     
@@ -32,3 +32,6 @@ def register_api_function(name):
         API_REGISTER().register(function, name)
         return function
     return decorator
+
+from django.utils.module_loading import autodiscover_modules
+autodiscover_modules('search_field_functions')

@@ -1,19 +1,72 @@
+<style>
+    .select2-results__option {
+        color: black !important;
+    }
+    .select2-rendered__match {
+        background-color: yellow;
+      }
+</style>  
+{% load django_search_input_field %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <select class="select2-search-query" query_function="{{ widget.attrs.query_function_name }}" style="width: 100%" name="{{ widget.name }}" id="{{ widget.id_for_label }}">
-    </select>
+{% search_field_get_init_value widget.attrs.query_function_name widget.value as inital_value %}
+<select class="select2-search-query" query_function="{{ widget.attrs.query_function_name }}" style="width: 30%" name="{{ widget.name }}" id="{{ widget.attrs.id }}">
+{% if inital_value %}
+    <option value="{{ inital_value.id }}" selected="selected">{{ inital_value.string }}</option>
+{% endif %}
+</select>
 
 
 <script>
     $(document).ready(function() {
-        $('.select2-search-query').select2({
+        var query_text = '';
+        function markMatch (text, term) {
+            // Find where the match is
+            var match = text.toUpperCase().indexOf(term.toUpperCase());
+          
+            var $result = $('<span></span>');
+          
+            // If there is no match, move on
+            if (match < 0) {
+              return $result.text(text);
+            }
+          
+            // Put in whatever text is before the match
+            $result.text(text.substring(0, match));
+          
+            // Mark the match
+            var $match = $('<span class="select2-rendered__match"></span>');
+            $match.text(text.substring(match, match + term.length));
+          
+            // Append the matching text
+            $result.append($match);
+          
+            // Put in whatever is after the match
+            $result.append(text.substring(match + term.length));
+          
+            return $result;
+          }
+
+        $('#{{ widget.attrs.id }}').select2({            
+            width: 'resolve',
+            templateResult: function (item) {
+                // No need to template the searching text
+                if (item.loading) {
+                  return item.text;
+                }
+            
+                var term = query_text || '';
+                var $result = markMatch(item.text, term);
+            
+                return $result;
+              },
             ajax: {
                 url: "{% url 'get_search_input_query_result' %}",
                 dataType: 'json',
                 delay: 1000,
                 data: function (params) {
-                    debugger;
+                    query_text = params.term;
                     return {
                         q: params.term, // search term
                         query_name: $(this).attr('query_function')
@@ -26,7 +79,8 @@
                 },
                 cache: true
             },
-            minimumInputLength: 1
+            minimumInputLength: {{ widget.attrs.min_search_length }}
+
         });
     });
 </script>
