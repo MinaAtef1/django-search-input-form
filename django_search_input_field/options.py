@@ -64,14 +64,15 @@ class SearchModelOptions():
     def get_object_by_pk(self, pk):
         return ModelOption(self.get_queryset_by_pk(pk), self.serializer, self.object_str)
     
-    def get_filtered_queryset(self, function_filters:dict)->QuerySet:
+    def get_filtered_queryset(self, function_filters:dict, search_key)->QuerySet:
         for key, value in function_filters.copy().items():
             del function_filters[key]
-            key = key + '__icontains'
+            if search_key == key:
+                key = key + '__icontains'
             function_filters[key] = value
         
         return self.get_queryset().filter(**function_filters)
         
-    def get_filtered_options(self, function_filters):
-        options = self.get_filtered_queryset(function_filters)
+    def get_filtered_options(self, function_filters, search_key):
+        options = self.get_filtered_queryset(function_filters, search_key)
         return [ModelOption(option, self.serializer, self.object_str) for option in options]

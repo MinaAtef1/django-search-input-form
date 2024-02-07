@@ -15,6 +15,18 @@ class RelatedFillForm(forms.Form):
         
         return function_attrs
     
+    
+    def function_attrs_clean(self, function_attrs:dict):
+        """
+        Clean the function attrs
+        """
+        for key, value in function_attrs.copy().items():
+            if value is None:
+                function_attrs[key] = "null"
+            elif value in [True, False]:
+                function_attrs[key] = str(value).lower()
+        return function_attrs
+    
     def __init__(self, *args, **kwargs):
         
         function_attrs = self.extract_function_attrs(kwargs)
@@ -33,7 +45,7 @@ class RelatedFillForm(forms.Form):
                 attrs = function_attrs.get(field_attrs_name)
                 if not attrs:
                     continue
-                
+                attrs = self.function_attrs_clean(attrs)
                 for attr_name, attr in attrs.items():
                     attr_name= f'function_filters__{attr_name}'
                     self.fields[field_name].widget.attrs[attr_name] = attr

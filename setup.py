@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-search-input-field',
-    version='0.1.3',
+    version='0.1.4',
     license='MIT',
     author="Treyd Services AB",
     author_email='support@treyd.io',
