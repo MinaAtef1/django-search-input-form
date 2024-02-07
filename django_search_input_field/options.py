@@ -59,7 +59,7 @@ class SearchModelOptions():
         return self.model.objects.all()
     
     def get_queryset_by_pk(self, pk)->QuerySet:
-        return self.model.objects.get(pk=pk)
+        return self.get_queryset().get(pk=pk)
         
     def get_object_by_pk(self, pk):
         return ModelOption(self.get_queryset_by_pk(pk), self.serializer, self.object_str)
