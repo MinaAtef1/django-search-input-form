@@ -11,7 +11,12 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 {% search_field_get_init_value widget.attrs.query_function_name widget.value as inital_value %}
-<select class="select2-search-query" query_function="{{ widget.attrs.query_function_name }}" style="width: 30%" name="{{ widget.name }}" id="{{ widget.attrs.id }}">
+<select class="select2-search-query" query_function="{{ widget.attrs.query_function_name }}" 
+style="width: 100%;"
+ name="{{ widget.name }}" 
+ id="{{ widget.attrs.id }}"
+ {% include "django/forms/widgets/attrs.html" %}
+ >
 {% if inital_value %}
     <option value="{{ inital_value.id }}" selected="selected">{{ inital_value.string }}</option>
 {% endif %}
@@ -69,8 +74,19 @@
                 delay: 1000,
                 data: function (params) {
                     query_text = params.term;
+                    search_field = $('#{{ widget.attrs.id }}').attr('search_field');
+                    // get all attrs that start with function_filters
+                    var function_filters = {};
+                    $.each($('#{{ widget.attrs.id }}').get(0).attributes, function(index, attr){
+                        if (attr.name.startsWith('function_filters')){
+
+                            function_filters[attr.name] = attr.value;
+                        }
+                    });
                     return {
                         q: params.term, // search term
+                        search_field: search_field,
+                        ...function_filters,
                         query_name: $(this).attr('query_function')
                     };
                 },
@@ -83,6 +99,20 @@
             },
             minimumInputLength: {{ widget.attrs.min_search_length }}
 
+        });
+
+        $('#{{ widget.attrs.id }}').on('select2:select', function (e) {
+            debugger
+            var data = e?.params?.data?.fields_data;
+            // get all input that has related_search_input_id = {{ widget.attrs.id }}
+            var related_search_input = $('input[related_search_input_id={{ widget.attrs.id }}]');
+            // for each input, get the value of related_field and set it to the value of the input
+            related_search_input.each(function(index, element){
+                var related_field = $(element).attr('related_field');
+                debugger
+                $(element).val(data[related_field]);
+            });
+            console.log(data);
         });
     });
 </script>

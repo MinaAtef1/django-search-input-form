@@ -1,6 +1,7 @@
 from django import forms
 
-class SearchTextInput(forms.widgets.TextInput):
-    template_name = 'search_text_input.html'
+class SelectSearchTextInput(forms.widgets.TextInput):
+    template_name = 'select_search_text_input.html'
+
 
     

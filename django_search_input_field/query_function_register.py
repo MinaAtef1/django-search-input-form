@@ -2,7 +2,7 @@ import inspect
 
 
 class API_REGISTER():
-    api_functions = {}
+    api_classes = {}
     
     
     def __new__(cls):
@@ -14,19 +14,18 @@ class API_REGISTER():
     # each function should only take one parameter, which is the query
     def register(self, function, name):
         assert callable(function), f"The function '{name}' is not callable."
-        assert name not in self.api_functions, f"The function '{name}' is already registered."
         assert name is not None, f"The function name cannot be None."
+        if name in self.api_classes and self.api_classes[name].__module__ == function.__module__:
+            return 
         
-        num_params = len(inspect.signature(function).parameters)
-        assert num_params == 2, f"The function '{name}' should take only two parameter."
+        if name in self.api_classes:
+            raise ValueError(f"The function name '{name}' is already registered.")
         
-        self.api_functions[name] = function
+        self.api_classes[name] = function
     
     def get(self, name):
-        return self.api_functions[name]
-        
-    
-    
+        return self.api_classes.get(name)
+
 def register_api_function(name):
     def decorator(function):
         API_REGISTER().register(function, name)

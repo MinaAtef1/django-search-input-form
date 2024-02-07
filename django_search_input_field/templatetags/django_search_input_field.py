@@ -7,6 +7,6 @@ register = template.Library()
 def get_init_selected(function_name, value):
     if not value:
         return None
-    option =  API_REGISTER().get(function_name)(selected_value=value)
+    option =  API_REGISTER().get(function_name)().get_object_by_pk(value)
     return {'id': option.id, 'string': option.string}
     

@@ -6,19 +6,30 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from uuid import uuid4
 
-@login_required
+# @login_required
 def get_query_result(request):
     query_name = request.GET.get('query_name')
     query = request.GET.get('q')
+    search_field = request.GET.get('search_field')
+    
+    function_filters = {k.replace('function_filters__', ''): v for k, v in request.GET.items() if k.startswith('function_filters__')}
+    function_filters.update({search_field: query})
     # get the query function
-    query_function = API_REGISTER().get(query_name)
+    query_class = API_REGISTER().get(query_name)
+    if not query_class:
+        print(f"ERROR: The query function '{query_name}' is not registered.")
+        return JsonResponse({"error":""},status=400)
+    
+    if not query_class().get_permissions(request):
+        print(f"ERROR: The user does not have permission to access the query function '{query_name}'.")
+        return JsonResponse({"error":""},status=403)
     
     # get the result
     try:
-        options = query_function(search_query=query)
+        options = query_class().get_filtered_options(function_filters)
         result = []
         for option in options:
-            result.append({'id': option.id, 'text': option.string})
+            result.append(option.to_dict())
         
     except Exception as e:
         uuid = uuid4()
