@@ -5,15 +5,17 @@
     .select2-rendered__match {
         background-color: yellow;
       }
+  
 </style>  
-{% load django_search_input_field %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-{% search_field_get_init_value widget.attrs.query_function_name widget.value as inital_value %}
+{% load django_search_input_field static %}
+{% search_field_get_init_value widget.attrs.query_function_name widget.attrs.model_field widget.value  as inital_value %}
+
+
+<div id="django-search-url" url="{% url 'get_search_input_query_result' %}" style='display: none;'></div>
+
 <select class="select2-search-query" query_function="{{ widget.attrs.query_function_name }}" 
-style="width: 100%;"
- name="{{ widget.name }}" 
+style="width: auto;min-width: 200px; max-width: 100%;" 
+name="{{ widget.name }}" 
  id="{{ widget.attrs.id }}"
  {% include "django/forms/widgets/attrs.html" %}
  >
@@ -23,96 +25,3 @@ style="width: 100%;"
 </select>
 
 
-<script>
-    $(document).ready(function() {
-        var query_text = '';
-        function markMatch (text, term) {
-            // Find where the match is
-            var match = text.toUpperCase().indexOf(term.toUpperCase());
-          
-            var $result = $('<span></span>');
-          
-            // If there is no match, move on
-            if (match < 0) {
-              return $result.text(text);
-            }
-          
-            // Put in whatever text is before the match
-            $result.text(text.substring(0, match));
-          
-            // Mark the match
-            var $match = $('<span class="select2-rendered__match"></span>');
-            $match.text(text.substring(match, match + term.length));
-          
-            // Append the matching text
-            $result.append($match);
-          
-            // Put in whatever is after the match
-            $result.append(text.substring(match + term.length));
-          
-            return $result;
-          }
-
-        $('#{{ widget.attrs.id }}').select2({            
-            width: 'resolve',
-            allowClear: true,
-            placeholder: "search",            
-            templateResult: function (item) {
-                // No need to template the searching text
-                if (item.loading) {
-                  return item.text;
-                }
-            
-                var term = query_text || '';
-                var $result = markMatch(item.text, term);
-            
-                return $result;
-              },
-            ajax: {
-                url: "{% url 'get_search_input_query_result' %}",
-                dataType: 'json',
-                delay: 1000,
-                data: function (params) {
-                    query_text = params.term;
-                    search_field = $('#{{ widget.attrs.id }}').attr('search_field');
-                    // get all attrs that start with function_filters
-                    var function_filters = {};
-                    $.each($('#{{ widget.attrs.id }}').get(0).attributes, function(index, attr){
-                        if (attr.name.startsWith('function_filters')){
-
-                            function_filters[attr.name] = attr.value;
-                        }
-                    });
-                    return {
-                        q: params.term, // search term
-                        search_field: search_field,
-                        ...function_filters,
-                        query_name: $(this).attr('query_function')
-                    };
-                },
-                processResults: function (data, params) {
-                    return {
-                        results: data
-                    };
-                },
-                cache: true
-            },
-            minimumInputLength: {{ widget.attrs.min_search_length }}
-
-        });
-
-        $('#{{ widget.attrs.id }}').on('select2:select', function (e) {
-            debugger
-            var data = e?.params?.data?.fields_data;
-            // get all input that has related_search_input_id = {{ widget.attrs.id }}
-            var related_search_input = $('input[related_search_input_id={{ widget.attrs.id }}]');
-            // for each input, get the value of related_field and set it to the value of the input
-            related_search_input.each(function(index, element){
-                var related_field = $(element).attr('related_field');
-                debugger
-                $(element).val(data[related_field]);
-            });
-            console.log(data);
-        });
-    });
-</script>

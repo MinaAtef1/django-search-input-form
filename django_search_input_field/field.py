@@ -10,17 +10,19 @@ import random
 class SelectSearchCharField(forms.CharField):
     widget = SelectSearchTextInput
 
-    def __init__(self, query_function_name='', min_search_length=1,*args, **kwargs):
+    def __init__(self, query_function_name='',field=None, min_search_length=1,*args, **kwargs):
         assert query_function_name is not None, f"The query function name cannot be None."
         self.query_function_name = query_function_name
         self.min_search_length = min_search_length
+        self.field = field
         super().__init__(*args, **kwargs)
 
     def widget_attrs(self, widget: Widget) -> Any:
         attrs = super().widget_attrs(widget)            
         attrs.update({'query_function_name': self.query_function_name,
                       'min_search_length': self.min_search_length,
-                      'id': f"search-input-{random.randint(0, 1000000000)}"
+                      "search_field" : self.field,
+                      "id": f"search-input-{random.randint(0, 1000000000)}",
                       })
         return attrs
 
@@ -42,6 +44,7 @@ class SearchModelField(forms.CharField):
                       'min_search_length': self.min_search_length,
                       'id': f"search-input-{random.randint(0, 1000000000)}",
                       "search_field" : self.search_field,
+                      "model_field": True
                       })
         return attrs
     

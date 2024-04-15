@@ -37,10 +37,12 @@ class RelatedFillForm(forms.Form):
             if issubclass(field.__class__, MainModelRelatedField):
                 related_search_input_name = field.related_search_input
                 related_field = self.fields[related_search_input_name]
-                related_field_id = related_field.widget.attrs['id']
+                related_field_id = f"search-field-{id(related_field)}"
                 self.fields[field_name].widget.attrs['related_search_input_id'] = related_field_id
                 
             elif isinstance(field, SearchModelField):
+                field_id = f"search-field-{id(field)}"
+                self.fields[field_name].widget.attrs['id'] = field_id
                 field_attrs_name = f'{field_name}__function_filters'
                 attrs = function_attrs.get(field_attrs_name)
                 if not attrs:

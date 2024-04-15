@@ -1,3 +1,4 @@
 include django_search_input_field/templates/*
+include django_search_input_field/static/*
 include ./README.md
 include ./LICENSE

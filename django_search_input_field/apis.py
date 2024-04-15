@@ -15,6 +15,8 @@ def get_query_result(request):
     function_filters.update({search_field: query})
 
     for key, value in function_filters.copy().items():
+        if not type(value) == str:
+            continue
         if value == "null":
             function_filters[key] = None
         elif value.lower() in ["true", "false"]:

@@ -49,7 +49,7 @@ class SearchModelOptions():
     
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        API_REGISTER().register(cls, cls.query_function_name)
+        API_REGISTER().register(cls, cls.query_function_name) 
     
     
     def get_permissions(self, request):
@@ -76,3 +76,35 @@ class SearchModelOptions():
     def get_filtered_options(self, function_filters, search_key):
         options = self.get_filtered_queryset(function_filters, search_key)
         return [ModelOption(option, self.serializer, self.object_str) for option in options]
+    
+    
+class SearchFieldOptions():
+    model = None
+    query_function_name = None
+            
+    def object_str(self, obj):
+        return str(obj)
+    
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        API_REGISTER().register(cls, cls.query_function_name) 
+    
+    
+    def get_permissions(self, request):
+        return request.user.is_authenticated
+    
+    def get_queryset(self)->QuerySet:
+        return self.model.objects.all()
+    
+    def get_filtered_queryset(self, function_filters:dict, search_key)->QuerySet:
+        for key, value in function_filters.copy().items():
+            del function_filters[key]
+            if search_key == key:
+                key = key + '__icontains'
+            function_filters[key] = value
+        
+        return self.get_queryset().filter(**function_filters).values_list(search_key, flat=True).distinct()
+        
+    def get_filtered_options(self, function_filters, search_key):
+        options = self.get_filtered_queryset(function_filters, search_key)
+        return [InputOption(option, option) for option in options]
