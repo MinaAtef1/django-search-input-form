@@ -6,10 +6,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-search-input-field',
-    version='0.1.9',
+    version='0.1.10',
     license='MIT',
-    author="Treyd Services AB",
-    author_email='support@treyd.io',
+    author="Mina Atef",
+    author_email='mina.atef0@gmail.com',
     packages=find_packages(include=['django_search_input_field', 'django_search_input_field.*',
                                     'django_search_input_field.templates', 'django_search_input_field.templates.*']),
     include_package_data=True,

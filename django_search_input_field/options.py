@@ -15,6 +15,20 @@ class InputOption():
             'text': self.string
         }
 
+class DictOption():
+    def __init__(self, id, string, json):
+        self.id = id
+        self.string = string
+        self.json = json
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'text': self.string,
+            'fields_data': self.json
+        }
+
+
 class ModelOption():
     def __init__(self, item, serializer=None ,str_function=None):
         # django model serializer
@@ -78,7 +92,7 @@ class SearchModelOptions():
         return [ModelOption(option, self.serializer, self.object_str) for option in options]
     
     
-class SearchFieldOptions():
+class SearchFieldModelOptions():
     model = None
     query_function_name = None
             
@@ -108,3 +122,19 @@ class SearchFieldOptions():
     def get_filtered_options(self, function_filters, search_key):
         options = self.get_filtered_queryset(function_filters, search_key)
         return [InputOption(option, option) for option in options]
+    
+    
+class SearchFieldOptions():
+    json = None
+    query_function_name = None
+    
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        API_REGISTER().register(cls, cls.query_function_name) 
+    
+    def get_permissions(self, request):
+        return request.user.is_authenticated
+    
+    
+    def get_filtered_options(self, function_filters, search_key):
+        raise NotImplementedError("This method must be implemented in the subclass")

@@ -6,7 +6,6 @@ from .widgets import SelectSearchTextInput
 import random
 
 
-
 class SelectSearchCharField(forms.CharField):
     widget = SelectSearchTextInput
 

@@ -1,5 +1,5 @@
 from django import forms
-from .field import MainModelRelatedField, SearchModelField
+from .field import MainModelRelatedField, SearchModelField, SelectSearchCharField
 
 class RelatedFillForm(forms.Form):
     
@@ -40,7 +40,7 @@ class RelatedFillForm(forms.Form):
                 related_field_id = f"search-field-{id(related_field)}"
                 self.fields[field_name].widget.attrs['related_search_input_id'] = related_field_id
                 
-            elif isinstance(field, SearchModelField):
+            elif isinstance(field, SearchModelField) or issubclass(field.__class__, SelectSearchCharField):
                 field_id = f"search-field-{id(field)}"
                 self.fields[field_name].widget.attrs['id'] = field_id
                 field_attrs_name = f'{field_name}__function_filters'
