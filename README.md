@@ -1,4 +1,3 @@
-```
 # Django Search Input Field
 
 The Django Search Input Field package simplifies the process of integrating Ajax searchable input fields into Django forms. This package provides flexibility for searching model fields or any custom data, enhancing the user experience and improving search functionality within your Django applications.
