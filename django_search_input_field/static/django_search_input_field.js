@@ -52,7 +52,6 @@ function search_input_field_init() {
 				dataType: 'json',
 				delay: 1000,
 				data: function (params) {
-					debugger;
 					query_text = params.term;
 					search_field = $(element).attr('search_field');
 					// get all attrs that start with function_filters
@@ -71,7 +70,7 @@ function search_input_field_init() {
 				},
 				processResults: function (data, params) {
 					return {
-						results: data,
+						results: data
 					};
 				},
 				cache: true,
@@ -79,14 +78,14 @@ function search_input_field_init() {
 			minimumInputLength: element.getAttribute('min_search_length'),
 		});
 		$(element).on('select2:select', function (e) {
-			debugger;
+			
 			var data = e?.params?.data?.fields_data;
 			// get all input that has related_search_input_id = {{ widget.attrs.id }}
 			var related_search_input = $(`input[related_search_input_id=${element.id}]`);
 			// for each input, get the value of related_field and set it to the value of the input
 			related_search_input.each(function (index, element) {
 				var related_field = $(element).attr('related_field');
-				debugger;
+				
 				$(element).val(data[related_field]);
 			});
 			console.log(data);
