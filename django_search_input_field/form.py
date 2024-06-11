@@ -1,5 +1,5 @@
 from django import forms
-from .field import MainModelRelatedField, SearchModelField, SelectSearchCharField
+from .field import MainRelatedField, SearchModelField, SelectSearchCharField
 
 class RelatedFillForm(forms.Form):
     
@@ -33,8 +33,8 @@ class RelatedFillForm(forms.Form):
         super().__init__(*args, **kwargs)
         
         for field_name, field in self.fields.items():
-            # check if the field is class is inherited from MainModelRelatedField
-            if issubclass(field.__class__, MainModelRelatedField):
+            # check if the field is class is inherited from MainRelatedField
+            if issubclass(field.__class__, MainRelatedField):
                 related_search_input_name = field.related_search_input
                 related_field = self.fields[related_search_input_name]
                 related_field_id = f"search-field-{id(related_field)}"

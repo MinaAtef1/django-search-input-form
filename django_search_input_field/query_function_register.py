@@ -12,16 +12,16 @@ class API_REGISTER():
     
     
     # each function should only take one parameter, which is the query
-    def register(self, function, name):
+    def register(self, function, name, auto_register=False):
         assert callable(function), f"The function '{name}' is not callable."
         assert name is not None, f"The function name cannot be None."
         if name in self.api_classes and self.api_classes[name].__module__ == function.__module__:
             return 
         
-        if name in self.api_classes:
+        elif name in self.api_classes and not auto_register:
             raise ValueError(f"The function name '{name}' is already registered.")
         
-        self.api_classes[name] = function
+        self.api_classes.setdefault(name, function)
     
     def get(self, name):
         return self.api_classes.get(name)

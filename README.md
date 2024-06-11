@@ -7,7 +7,7 @@ The Django Search Input Field package simplifies the process of integrating Ajax
 You can install the package via pip:
 
 ```shell
-pip install django-search-input
+pip install django-search-input-field
 ```
 
 Once installed, add the app to your `INSTALLED_APPS` in your Django settings:
@@ -23,95 +23,112 @@ Finally, include the package's URLs in your project's URL configuration:
 
 ```python
 urlpatterns = [
-    path('django_search_filters/', include('django_search_input_field.urls')),
+    path('django_search_input_field/', include('django_search_input_field.urls')),
 ]
 ```
 
-## Model Fields Search
+## Usage
 
-To perform model field search, you can utilize the `SearchFieldModelOptions` provided by the package. Here's an example:
+### Field Types
+
+#### SelectSearchCharField
+
+The `SelectSearchCharField` is used to perform a search on a specified field and return the field value.
+
+Example Usage:
 
 ```python
-from django_search_input_field.options import SearchFieldModelOptions
 from django import forms
-
-class EntryFieldsSearch(SearchFieldModelOptions):
-    model = Subjects
-    query_function_name = 'search_subjects'
-
-    def get_permissions(self, request):
-        return True
-
-class SubjectFormAllFieldsSearch(forms.Form):
-    name = SelectSearchCharField(query_function_name='search_subjects', field='name')
-    description = forms.CharField(widget=forms.Textarea)
-```
-
-## Custom Data Search
-
-For custom data search, you can use the `SearchFieldOptions` along with custom filtering logic. Here's an example:
-
-```python
-from django_search_input_field.options import SearchFieldOptions
 from django_search_input_field.field import SelectSearchCharField
-from django_search_input_field.data_structures import DictOption
+from Main.models import Customers
+
+class CustomerSearchFieldForm(forms.Form):
+    name = SelectSearchCharField(field="name", model=Customers)
+```
+#### SearchModelField
+The SearchModelField is used to search based on a specified field but returns the entire model object, using the field for searching.
+
+Example Usage:
+```python 
 from django import forms
+from django_search_input_field.field import SearchModelField
+from Main.models import Customers
 
-class SubjectNameSearch(SearchFieldOptions):
-    query_function_name = 'subject_name_search'
-    
-    def get_permissions(self, request):
-        return request.user.is_staff
+class CustomerSearchFieldForm(forms.Form):
+    name = SearchModelField(model=Customers, search_field="name")
+```
 
-    def get_filtered_options(self, function_filters, search_key):
-        # Custom filtering logic goes here
-        return [DictOption(id=subject['id'], string=subject['name'], json=subject['additional_data']) for subject in subjects ]
+#### CharRelatedField
+The CharRelatedField is used to fill related fields automatically when a SearchModelField is selected.
 
-class SubjectFormJsons(forms.Form):
-    name = SelectSearchCharField(query_function_name='subject_name_search', field='name')
-    description = forms.CharField(widget=forms.Textarea)
+Example Usage:
+```python
+from django import forms
+from django_search_input_field.field import CharRelatedField, SearchModelField
+from Main.models import Customers
+
+class CustomerSearchFieldWithRelatedForm(forms.Form):
+    name = SearchModelField(model=Customers, search_field="name")
+    email = CharRelatedField(related_field="name", related_search_input="email")
 ```
 
 
-## Custom Data Search with Related Fields
 
-For custom data search with related fields handling, you can use the `SearchFieldOptions` along with custom filtering logic. Here's an example:
+## Advanced Usage
+### fields
+| Argument              | Description                                                                                    |
+|-----------------------|------------------------------------------------------------------------------------------------|
+| field                 | Specifies the field to perform the search on.                                                   |
+| model                 | Specifies the model to perform the search on. Only used with `SelectSearchCharField`.            |
+| search_field          | Specifies the field to search on. Only used with `SearchModelField`.                             |
+| related_field         | Specifies the related field to populate automatically. Only used with `CharRelatedField`.        |
+| related_search_input  | Specifies the related search input. Only used with `CharRelatedField`.                           |
+| permissions           | Specifies the permissions required for the search operation.                                    |
+| query_function_name   | Specifies the name of the query function to be used.                                            |
+| min_search_length     | Specifies the minimum length of characters required for the search to execute.                  |
+
+
+### Custom Providers
+You can create custom providers to tailor the search behavior according to your specific requirements.
+
+Here's an example of creating a custom provider:
+
 
 ```python
-from django_search_input_field.field import SelectSearchCharField, CharModelRelatedField
-from django_search_input_field.options import SearchFieldOptions, DictOption
-from django_search_input_field.form import RelatedFillForm
-from django import forms
+from django_search_input_field.providers import SearchModelProvider
 
-class SubjectNameSearch(SearchFieldOptions):
-    query_function_name = 'subject_name_search'
-    
-    def get_permissions(self, request):
-        return request.user.is_staff
+class CustomModelProvider(SearchModelProvider):
+    model = YourModel
+    query_function_name = 'custom_search_function'
+    auto_register = True
+
+    def get_queryset(self):
+        # Implement your custom queryset logic here
+        return YourModel.objects.all()
+
+    def get_filtered_queryset(self, function_filters, search_key):
+        # Implement your custom filtered queryset logic here
+        return YourModel.objects.filter(**function_filters)
 
     def get_filtered_options(self, function_filters, search_key):
-        subjects = [{'id':'math', 'name': 'Math', "additional_data": {"year": 2021, "semester": 1}},
-                    {'id':'science', 'name': 'Science', "additional_data": {"year": 2021, "semester": 1}},
-                    {'id':'english', 'name': 'English', "additional_data": {"year": 2021, "semester": 1}}]
-                    
-        return [DictOption(id=subject['id'], string=subject['name'], json=subject['additional_data']) for subject in subjects ]
-
-class SubjectFormJsons(RelatedFillForm):
-    name = SelectSearchCharField(query_function_name='subject_name_search', field='name')
-    year = CharModelRelatedField(related_search_input='name', related_field='additional_data.year')
-    semester = CharModelRelatedField(related_search_input='name', related_field='additional_data.semester')
+        options = self.get_filtered_queryset(function_filters, search_key)
+        return [ModelOption(option, serializer=None, object_str=lambda obj: str(obj)) for option in options]
 ```
 
-In this example, `SubjectNameSearch` defines custom permissions and custom filtering logic for searching subjects. 
+### Using Custom Providers
+After creating a custom provider, you can use it in your form or field:
 
-`SubjectFormJsons` inherits from `RelatedFillForm`, allowing for automatic filling of related fields based on the selected subject name. The `year` and `semester` fields are populated based on the additional data associated with the selected subject.
+```python
+from django import forms
+from django_search_input_field.field import SearchModelField
+from .providers import CustomModelProvider
 
-
-## Contributing
-
-Contributions are welcome! If you have any improvements or bug fixes, feel free to submit a pull request. For major changes, please open an issue first to discuss the proposed changes.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+class YourForm(forms.Form):
+    custom_field = SearchModelField(
+        model=None,
+        search_field="your_field",
+        permissions=[YourCustomPermission],
+        query_function_name=CustomModelProvider.query_function_name,
+        min_search_length=1,
+    )
 ```

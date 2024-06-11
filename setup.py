@@ -6,7 +6,7 @@ long_description = (Path(__file__).parent / "README.md").read_text()
 
 setup(
     name='django-search-input-field',
-    version='0.1.11',
+    version='0.1.12',
     license='MIT',
     author="Mina Atef",
     author_email='mina.atef0@gmail.com',
