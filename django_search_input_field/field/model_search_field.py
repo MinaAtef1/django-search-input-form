@@ -5,12 +5,12 @@ from django.forms.widgets import Widget
 from ..widgets import SelectSearchTextInput
 import random
 from ..providers import create_model_provider_from_model
-from ..providers import OnlyAuthenticated
+from rest_framework.permissions import IsAuthenticated
 
 class SearchModelField(forms.CharField):
     widget = SelectSearchTextInput
 
-    def __init__(self, model, search_field, permissions=[OnlyAuthenticated], query_function_name='', min_search_length=1,*args, **kwargs):
+    def __init__(self, model, search_field, permissions=IsAuthenticated, query_function_name='', min_search_length=1,*args, **kwargs):
         if not query_function_name:
             provider = create_model_provider_from_model(model, permissions)
             query_function_name = provider.query_function_name

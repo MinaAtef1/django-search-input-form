@@ -1,10 +1,8 @@
 from .query_function_register import API_REGISTER
 from django.db.models import QuerySet
 from .options import InputOption, ModelOption
+from rest_framework.permissions import  IsAuthenticated
 
-class OnlyAuthenticated:
-    def has_permission(self, request):
-        return request.user.is_authenticated
 
 
 class SearchModelProvider:
@@ -87,30 +85,24 @@ class SearchDataProvider:
     def get_filtered_options(self, function_filters, search_key):
         raise NotImplementedError("This method must be implemented in the subclass")
 
-def create_model_provider_from_model(Model, permission_classes=[]):
+def create_model_provider_from_model(Model, permission_classe=IsAuthenticated):
     class Provider(SearchModelProvider):
         model = Model
         query_function_name = Model.__name__ + '_search'
         auto_register = True
         
         def get_permissions(self, request):
-            for permission in permission_classes:
-                if not permission().has_permission(request):
-                    return False
-            return True 
+           return permission_classe().has_permission(request, None)
         
     return Provider
 
-def create_model_field_provider_from_model(Model, permission_classes=[]):
+def create_model_field_provider_from_model(Model, permission_classe=IsAuthenticated):
     class Provider(SearchModelFieldProvider):
         model = Model
         query_function_name = Model.__name__ + '_search_field'
         auto_register = True
 
         def get_permissions(self, request):
-            for permission in permission_classes:
-                if not permission().has_permission(request):
-                    return False
-            return True
-        
+            return permission_classe().has_permission(request, None)
+
     return Provider

@@ -6,7 +6,7 @@ long_description = (Path(__file__).parent / "README.md").read_text()
 
 setup(
     name='django-search-input-field',
-    version='0.1.12',
+    version='0.1.13',
     license='MIT',
     author="Mina Atef",
     author_email='mina.atef0@gmail.com',
@@ -18,6 +18,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
+        'djangorestframework',
         # Add any package dependencies here
     ],
     classifiers=[
