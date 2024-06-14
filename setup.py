@@ -6,14 +6,14 @@ long_description = (Path(__file__).parent / "README.md").read_text()
 
 setup(
     name='django-search-input-field',
-    version='0.1.13',
+    version='0.1.14',
     license='MIT',
     author="Mina Atef",
     author_email='mina.atef0@gmail.com',
     packages=find_packages(include=['django_search_input_field', 'django_search_input_field.*']),
     include_package_data=True,
     package_data={'django_search_input_field': ['templates/*']},
-    url='https://github.com/minaaaatef/django-search-input-form',
+    url='https://github.com/MinaAtef1/django-search-input-form',
     description='A Django app providing a search input field.',
     long_description=long_description,
     long_description_content_type='text/markdown',
